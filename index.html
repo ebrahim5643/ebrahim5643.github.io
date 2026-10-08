@@ -39,13 +39,16 @@ const $=s=>document.querySelector(s);
 const bn=n=>String(n).replace(/\d/g,d=>'০১২৩৪৫৬৭৮৯'[d]);
 const fmt=n=>bn(Math.abs(n).toLocaleString('en-US'));
 let S={tx:[],du:[],sv:[],bu:0,cb:{},pf:{},cc:[],tk:[],qk:[],rp:[],th:'light'};
+const S0=JSON.stringify(S);
 try{S=Object.assign(S,JSON.parse(localStorage.getItem('aybay')||'{}'))}catch(e){}
 const idb=()=>new Promise((r,j)=>{try{const q=indexedDB.open('aybay',1);q.onupgradeneeded=()=>q.result.createObjectStore('k');q.onsuccess=()=>r(q.result);q.onerror=()=>j()}catch(e){j()}});
 const idbSet=async v=>{try{const d=await idb();d.transaction('k','readwrite').objectStore('k').put(v,'s')}catch(e){}};
 const idbGet=async()=>{try{const d=await idb();return await new Promise(r=>{const q=d.transaction('k').objectStore('k').get('s');q.onsuccess=()=>r(q.result);q.onerror=()=>r()})}catch(e){}};
 const FB={apiKey:"AIzaSyDoa0o207iGfnCI2-xzxglSDxOlAamqs4M",authDomain:"aybay-676c9.firebaseapp.com",projectId:"aybay-676c9",appId:"1:917948003695:web:04c78dd29a21c2742ea49a"}; // Firebase কনফিগ এখানে বসান
 let fdb,fu;
-function fbInit(){if(!FB.apiKey||!window.firebase)return;firebase.initializeApp(FB);firebase.auth().onAuthStateChanged(u=>{fu=u;if(!u)return;fdb=firebase.firestore();fdb.doc('users/'+u.uid).get().then(d=>{if(d.exists){const o=JSON.parse(d.data().j);if((o.ts||0)>(S.ts||0)||!(S.tx.length||S.du.length||S.sv.length||S.tk.length)){S=Object.assign(S,o);syncC();theme();draw()}else save()}else save()}).catch(()=>{})})}
+function fbInit(){if(!FB.apiKey||!window.firebase)return;firebase.initializeApp(FB);firebase.auth().onAuthStateChanged(u=>{fu=u;if(!u){fdb=null;return}fdb=firebase.firestore();fdb.doc('users/'+u.uid).get().then(d=>{const rem=d.exists?JSON.parse(d.data().j):null,mine=!S.owner||S.owner==u.uid,emp=!(S.tx.length||S.du.length||S.sv.length||S.tk.length);
+if(!mine){const th=S.th;S=JSON.parse(S0);S.th=th;if(rem)S=Object.assign(S,rem)}else if(rem&&((rem.ts||0)>(S.ts||0)||emp)){S=Object.assign(S,rem)}
+S.owner=u.uid;syncC();theme();draw();save()}).catch(()=>{})})}
 const save=()=>{S.ts=Date.now();const j=JSON.stringify(S);if(fdb&&fu)fdb.doc('users/'+fu.uid).set({j}).catch(()=>{});try{localStorage.setItem('aybay',j)}catch(e){}idbSet(j)};
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
 if(!S.tx.length&&!S.du.length&&!S.sv.length)idbGet().then(v=>{if(v){try{S=Object.assign(S,JSON.parse(v));theme();draw()}catch(e){}}});
@@ -223,14 +226,14 @@ function draw(){
   $('#fab').style.display=(tab>=5||(tab==1&&(dv==1||dv==3)))?'none':'';$('#fab').style.bottom=(tab==1&&dv==2)?'calc(84px + env(safe-area-inset-bottom,0px))':'';
   $('#m').innerHTML=h;if(tab==0&&q){const e=$('#sq');if(e){e.focus();e.setSelectionRange(q.length,q.length)}}if(tab==1&&dq){const e=$('#dq');if(e){e.focus();e.setSelectionRange(dq.length,dq.length)}}
 }
-$('#st').onclick=()=>{$('#fm').innerHTML='<b>ব্যাকআপ ও রিস্টোর</b><p class="m">ব্যাকআপ কোড কপি করে WhatsApp/Notes/Drive-এ রাখুন। রিস্টোরে কোড পেস্ট করুন।</p><textarea id="bk" rows="6" style="width:100%;border-radius:12px;padding:8px;background:var(--bg);color:var(--tx);border:1px solid var(--bd)"></textarea><button class="go" id="lg" style="margin-bottom:8px">☁️ Google লগইন (অটো ক্লাউড ব্যাকআপ)</button><button class="go" id="lo" style="margin-bottom:8px;background:var(--mut)">🚪 লগআউট</button><button class="go" id="wp" style="margin-bottom:8px;background:var(--exp)">🧪 লগআউট + এই ফোনের ডেটা মুছুন (পরীক্ষা)</button><button class="go" id="dl" style="margin-bottom:8px;background:#6d0000">⚠️ অ্যাকাউন্ট ও ক্লাউড ডেটা মুছুন</button><button class="go" id="cp" style="margin:8px 0">ব্যাকআপ কোড দেখান/কপি</button><button class="go" id="rs" style="background:var(--exp)">রিস্টোর করুন</button>';
+$('#st').onclick=()=>{$('#fm').innerHTML='<b>ব্যাকআপ ও রিস্টোর</b><p class="m">ব্যাকআপ কোড কপি করে WhatsApp/Notes/Drive-এ রাখুন। রিস্টোরে কোড পেস্ট করুন।</p><textarea id="bk" rows="6" style="width:100%;border-radius:12px;padding:8px;background:var(--bg);color:var(--tx);border:1px solid var(--bd)"></textarea><button class="go" id="lg" style="margin-bottom:8px">☁️ Google লগইন (অটো ক্লাউড ব্যাকআপ)</button><button class="go" id="lo" style="margin-bottom:8px;background:var(--mut)">🚪 লগআউট (এই ফোনের ডেটা মুছবে, ক্লাউডে থাকবে)</button><button class="go" id="dl" style="margin-bottom:8px;background:#6d0000">⚠️ অ্যাকাউন্ট ও ক্লাউড ডেটা মুছুন</button><button class="go" id="cp" style="margin:8px 0">ব্যাকআপ কোড দেখান/কপি</button><button class="go" id="rs" style="background:var(--exp)">রিস্টোর করুন</button>';
 $('#mo').style.display='flex';
 if(typeof fu!='undefined'&&fu)$('#lg').textContent='✅ '+(fu.email||'লগইন আছে');
-{const on=typeof fu!='undefined'&&fu,lo=$('#lo'),wp=$('#wp');const dl=$('#dl');if(!on){lo.style.display='none';wp.style.display='none';dl.style.display='none'}
+{const on=typeof fu!='undefined'&&fu,lo=$('#lo');const dl=$('#dl');if(!on){lo.style.display='none';dl.style.display='none'}
 let dc=0;dl.onclick=async()=>{if(!dc){dc=1;dl.textContent='⚠️ নিশ্চিত? ক্লাউড ও এই ফোনের সব ডেটা মুছে যাবে। আবার চাপুন';return}try{await firebase.firestore().doc('users/'+fu.uid).delete();try{await fu.delete()}catch(e){await firebase.auth().signOut()}try{localStorage.removeItem('aybay')}catch(e){}const d=await idb(),t=d.transaction('k','readwrite');t.objectStore('k').put('{}','s');t.oncomplete=()=>location.reload()}catch(e){dl.textContent='ত্রুটি: আবার লগইন করে চেষ্টা করুন'}}
-lo.onclick=()=>firebase.auth().signOut().then(()=>{$('#mo').style.display='none'});
-let c=0;wp.onclick=async()=>{if(!c){c=1;wp.textContent='⚠️ নিশ্চিত? আবার চাপুন (ক্লাউডে ডেটা থাকতে হবে)';return}
-try{const d=await idb(),t=d.transaction('k','readwrite');t.objectStore('k').put('{}','s');t.oncomplete=()=>{try{localStorage.removeItem('aybay')}catch(e){}firebase.auth().signOut().finally(()=>location.reload())}}catch(e){wp.textContent='ত্রুটি হয়েছে'}}}
+lo.onclick=async()=>{lo.textContent='ক্লাউডে সেভ হচ্ছে...';try{await Promise.race([fdb.doc('users/'+fu.uid).set({j:JSON.stringify(S)}),new Promise((_,r)=>setTimeout(r,8000))])}catch(e){lo.textContent='ক্লাউডে সেভ হয়নি। ইন্টারনেট চালু করে আবার চাপুন';return}
+try{localStorage.removeItem('aybay')}catch(e){}
+const d=await idb(),t=d.transaction('k','readwrite');t.objectStore('k').put('{}','s');t.oncomplete=()=>firebase.auth().signOut().finally(()=>location.reload())}}
 $('#lg').onclick=()=>{const b=$('#lg');try{const p=new firebase.auth.GoogleAuthProvider();b.textContent='লগইন হচ্ছে...';firebase.auth().signInWithPopup(p).then(()=>{b.textContent='✅ লগইন সফল'}).catch(e=>{if(['auth/popup-blocked','auth/operation-not-supported-in-this-environment','auth/web-storage-unsupported'].includes(e.code)){firebase.auth().signInWithRedirect(p)}else b.textContent='ত্রুটি: '+e.code})}catch(e){b.textContent='Firebase সেট করা হয়নি'}};
 $('#cp').onclick=()=>{const t=$('#bk');t.value=JSON.stringify(S);t.select();try{navigator.clipboard.writeText(t.value)}catch(e){}};
 $('#rs').onclick=()=>{try{const o=JSON.parse($('#bk').value);if(!o.tx)throw 0;S=Object.assign(S,o);save();theme();draw();$('#mo').style.display='none'}catch(e){$('#rs').textContent='কোডটি সঠিক নয়'}}};
