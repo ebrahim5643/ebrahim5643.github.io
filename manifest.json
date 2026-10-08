@@ -1,23 +1,38 @@
 {
- "name": "আয় ব্যয়",
+ "id": "/",
+ "name": "আয় ব্যয় - হিসাব খাতা",
  "short_name": "আয় ব্যয়",
- "start_url": "./",
+ "description": "দৈনিক আয়-ব্যয়, দেনা-পাওনা, বাজেট ও সঞ্চয়ের হিসাব",
+ "start_url": "/",
+ "scope": "/",
  "display": "standalone",
+ "orientation": "portrait",
  "background_color": "#fafafa",
  "theme_color": "#1a6dff",
  "lang": "bn",
+ "dir": "ltr",
+ "categories": [
+  "finance",
+  "productivity"
+ ],
  "icons": [
   {
    "src": "icon-192.png",
    "sizes": "192x192",
    "type": "image/png",
-   "purpose": "any maskable"
+   "purpose": "any"
   },
   {
    "src": "icon-512.png",
    "sizes": "512x512",
    "type": "image/png",
-   "purpose": "any maskable"
+   "purpose": "any"
+  },
+  {
+   "src": "icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
   }
  ]
 }
