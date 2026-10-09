@@ -71,8 +71,15 @@ $('#nc').onclick=()=>form('নতুন ক্যাটাগরি',[{l:'ক্
 const MNS=['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'],SM=(a,t)=>a.filter(x=>x.t==t).reduce((r,x)=>r+x.a,0);
 let FL={t:'',c:''};
 const closeM=()=>{$('#mo').style.display='none'};
-function openMenu(){const m=(l,f,ic)=>`<div class="mi" onclick="${f}">${l}<span>${ic}</span></div>`;
-$('#fm').innerHTML=m('ফিল্টার করুন','openFilter()','⏷')+m('ক্যাটাগরি','openCat()','🏷️')+m('গ্রাফ দেখুন','tab=6;closeM();draw()','📊')+m('কুইক এন্ট্রি','openQ()','⚡')+m('রিপিট','openRep()','🔁')+m('সার্চবার শো করুন','S.sb=S.sb===false;save();closeM();draw()',S.sb===false?'☐':'☑️')+m('মাসিক পার্সেন্টেজ বার','S.pb=S.pb===false;save();closeM();draw()',S.pb===false?'☐':'☑️');$('#mo').style.display='flex'}
+function closePM(){const p=$('#pm');if(p)p.remove()}
+function openMenu(ev){closePM();const I={fil:'<path d="M4 5h16l-6 7v6l-4 2v-8z"/>',cat:'<path d="M12 3l4 7H8z"/><rect x="3" y="14" width="7" height="7" rx="1"/><circle cx="17.5" cy="17.5" r="3.5"/>',pie:'<path d="M21 12A9 9 0 1 1 12 3v9z"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15z"/>',bolt:'<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>',tim:'<circle cx="12" cy="13" r="8"/><path d="M12 9v4M9 2h6"/>'};
+const ic=k=>`<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${I[k]}</svg>`;
+const ck=on=>on?'<span style="width:26px;height:26px;border-radius:6px;background:var(--pri);color:#fff;display:flex;align-items:center;justify-content:center;font-size:17px">✓</span>':'<span style="width:24px;height:24px;border-radius:6px;border:2px solid #bbb"></span>';
+const m=(l,f,r)=>`<div onclick="closePM();${f}" style="display:flex;justify-content:space-between;align-items:center;gap:30px;padding:17px 4px;font-size:17px;cursor:pointer">${l}${r}</div>`;
+const p=document.createElement('div');p.id='pm';p.style.cssText='position:fixed;inset:0;z-index:40';p.onclick=closePM;
+const r=ev&&ev.currentTarget?ev.currentTarget.getBoundingClientRect():null,top=r?Math.min(r.bottom-10,innerHeight-420):120;
+p.innerHTML=`<div onclick="event.stopPropagation()" style="position:absolute;right:14px;top:${Math.max(60,top)}px;background:var(--card);color:var(--tx);border-radius:20px;padding:8px 18px;box-shadow:0 8px 30px #0004;min-width:250px">`+m('ফিল্টার করুন','openFilter()',ic('fil'))+m('ক্যাটাগরি','openCat()',ic('cat'))+m('গ্রাফ দেখুন','tab=6;draw()',ic('pie'))+m('কুইক এন্ট্রি','openQ()',ic('bolt'))+m('রিপিট','openRep()',ic('tim'))+m('সার্চবার শো করুন','S.sb=S.sb===false;save();draw()',ck(S.sb!==false))+m('মাসিক পার্সেন্টেজ বার','S.pb=S.pb===false;save();draw()',ck(S.pb!==false))+'</div>';
+document.body.appendChild(p)}
 function openFilter2(){syncC();form('ফিল্টার',[{o:['সব ধরন','আয়','ব্যয়']},{o:['সব ক্যাটাগরি',...C]}],v=>{FL={t:v[0]=='আয়'?'i':v[0]=='ব্যয়'?'e':'',c:v[1]=='সব ক্যাটাগরি'?'':v[1]}})}
 function openQ(){$('#fm').innerHTML='<b>⚡ কুইক এন্ট্রি</b>'+(S.qk.map((x,i)=>`<div class="mi"><span onclick="qadd(${i});closeM()" style="flex:1">${x.d} · ${fmt(x.a)}</span><button class="x" onclick="S.qk.splice(${i},1);save();openQ()">✕</button></div>`).join('')||'<p class="m">কুইক এন্ট্রি নেই</p>')+'<button class="go" onclick="qnew()">＋ নতুন কুইক</button>';$('#mo').style.display='flex'}
 function rowMenu(id){$('#fm').innerHTML=`<div class="mi" onclick="txEdit(${id})">সম্পাদনা<span>✏️</span></div><div class="mi" onclick="S.tx=S.tx.filter(y=>y.id!=${id});save();closeM();draw()">মুছুন<span>🗑️</span></div>`;$('#mo').style.display='flex'}
@@ -180,7 +187,7 @@ function draw(){
     if(S.pb!==false&&(SM(pt,'i')||SM(pt,'e')))h+=`<div class="card" style="display:flex;gap:8px">${cp(SM(tm,'i'),SM(pt,'i'),'i')}${cp(SM(tm,'e'),SM(pt,'e'),'e')}</div>`;
     h+='<div class="stk">';
     h+=`<div class="card">${DF?`<div class="seg"><button class="on" style="flex:1">📅 ${dfL()}</button><button onclick="DF=null;draw()" style="flex:0 0 48px">✕</button></div>`:segH()}<div class="sum"><div class="i">আয়<b>${fmt(I)}</b></div><div class="e">ব্যয়<b>${fmt(E)}</b></div><div class="b">অবশিষ্ট<b>${B<0?'-':''}${fmt(B)}</b></div></div></div>`;
-    h+=`<div class="card" style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg)"><button class="ic" style="margin:0" onclick="S.sb=S.sb===false;save();draw()">🔍</button><span class="chip" style="flex:1;text-align:center">অবশিষ্ট ব্যালেন্স ${AB<0?'-':''}${fmt(AB)}</span><button class="ic" onclick="openMenu()">⋮</button></div>`;
+    h+=`<div class="card" style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg)"><button class="ic" style="margin:0" onclick="S.sb=S.sb===false;save();draw()">🔍</button><span class="chip" style="flex:1;text-align:center">অবশিষ্ট ব্যালেন্স ${AB<0?'-':''}${fmt(AB)}</span><button class="ic" onclick="openMenu(event)">⋮</button></div>`;
     if(S.sb!==false)h+=`<input id="sq" class="si" placeholder="🔍 সার্চ..." value="${q}" oninput="q=this.value;draw()">`;
     if(FL.t||FL.c)h+=`<button class="chip" onclick="FL={t:'',c:''};draw()">ফিল্টার চালু ✕</button>`;
     h+='</div>';
